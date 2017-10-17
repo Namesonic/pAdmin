@@ -91,6 +91,10 @@ function getOptions {
 
     # Look for commands
     if [ -a "$BASEDIR/modules/$1" ]; then
+
+        # Set the execution bit
+        eval "chmod u+x $BASEDIR/modules/$*"
+
         tplSuccess "Running module $1";
         echo
         export panel
