@@ -1,0 +1,7 @@
+# Name: Show Connections By Host
+# Command: netstat-ips
+# Desc: Graph # of connections for each host
+# Group: System
+# Usage: netstat-ips
+# Version: 1.0
+echo 'Connections per IP (netstat -ntu)'; netstat -ntu | awk ' $5 ~ /^[0-9]/ {print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn;

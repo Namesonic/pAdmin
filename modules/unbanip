@@ -1,0 +1,8 @@
+# Name: Unban IP with fail2ban
+# Command: unbanip
+# Desc: Unban IP address in fail2ban recidive jail
+# Group: Firewall
+# Usage: [ip address]
+# Version: 1.0
+
+fail2ban-client set recidive unbanip $1;

@@ -1,0 +1,232 @@
+#!/bin/bash
+
+#
+#   Server Status - Health & Optimization Monitoring
+#
+#   Todo - Add File Throughput Tests
+#   Todo - Add linux type & hosting environment awareness
+#   Todo - Add /etc/ServerStatus.conf config file
+#   Todo - Add "Changes" notifications for parameters that have +/- over a threshold
+#   Todo - Add "Warning Notification Thresholds" for various metrics
+#   Todo - Add "Program Mode" [ Monitoring | Optimization ] for cron run, or manual run
+#
+
+
+#
+# Global Vars
+#
+me=`basename "$0"`
+VERSION="1.02"
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+panel=""
+panelVer=""
+
+function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1 )" != "$1"; }
+
+function detectPanel {
+
+    panel="Unknown"
+
+    if [ -a /usr/local/psa/version ]; then
+
+        ver=`awk '$1 ~ /[0-9]/ {print $1}' /usr/local/psa/version`
+        panel="Plesk"
+        panelVer=$ver
+    fi
+
+    if [ -a /usr/local/cpanel/version ]; then
+        ver=`cat /usr/local/cpanel/version`
+        panel="cPanel"
+        panelVer=$ver
+    fi
+
+}
+
+# Setup program options
+function getOptions {
+
+    local OPTIND o a
+    while getopts ":hramsf" o; do
+
+        case "${o}" in
+            r)
+                a="${OPTARG}"
+                enableVerbose=true
+                ;;
+            s)
+                enableSystem=true
+                ;;
+            a)
+                enableApache=true
+                ;;
+            m)
+                enableMysql=true
+                ;;
+            f)
+                enableFilesystem=true
+                ;;
+            h)
+                tplHelp
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2;
+                tplShortHelp
+                return 1
+                ;;
+
+        esac
+    done
+    # Shift off the parsed options
+    shift $((OPTIND-1))
+
+    if [ -z $1 ]; then
+        tplShortHelp;
+        return 1;
+    fi
+
+    # Look for commands
+    if [ -a "$BASEDIR/modules/$1" ]; then
+        tplSuccess "Running module $1";
+        echo
+        export panel
+        export panelVer
+        export -f version_gt
+        eval "$BASEDIR/modules/$*"
+    else
+        tplError "Command not found ($1)";
+        echo
+        return 1;
+    fi
+
+    #echo "a: [${a}], non-option arguments: $*" 1>&2
+
+}
+
+#
+#   Template functions
+#
+function tplError {
+
+    echo "Error: $1";
+
+}
+
+function tplSuccess {
+
+    echo "Success: $1";
+
+}
+
+function tplHeader {
+    echo
+    echo "========================================="
+    echo "Namesonic Administraion Helper v$VERSION"
+    echo "   - ${panel} v${panelVer} Commands Enabled"
+    echo "========================================"
+    echo
+}
+
+function tplShortHelp {
+    echo
+    echo " Usage:"
+    echo "      ns [-rev] [command] [command arguments]"
+    echo
+    echo " Help:"
+    echo "      ns -h"
+
+    echo
+    echo " Commands:"
+    echo
+    declare -A final
+    for f in $BASEDIR/modules/*
+    do
+        c=`grep -hi "# Command: " $f | sed -n 's/# Command: / /p'`
+        grp=`grep -hi "# Group: " $f | sed -n 's/# Group: //p'`
+        final[$grp]+=$c
+    done
+
+    for g in "${!final[@]}"
+    do
+        echo "     $g Commands"
+        echo "     --------------------"
+        echo "           ${final[$g]}"
+        echo
+    done
+
+}
+
+function tplHelp {
+    echo
+    echo " Usage:"
+    echo "       ${me} [options] [monitoring options]"
+    echo "       ${me} -[rv] -[sam]"
+    echo ""
+    echo " Options:"
+    echo ""
+    echo "       -r       Show Full Report"
+    echo "       -e       Email Root Full Report ( used with -r )"
+    echo "       -v       Verbose Output"
+    echo ""
+    echo " Installed Commands:"
+    echo ""
+
+    # Loop through modules folder
+    #   - take Name: Desc: fields for display
+    declare -A final
+    for f in $BASEDIR/modules/*
+    do
+        a=`grep -hi "# Name: " $f | sed -n 's/# Name: //p'`
+        b=`grep -hi "# Desc: " $f | sed -n 's/# Desc: //p'`
+        c=`grep -hi "# Command: " $f | sed -n 's/# Command: //p'`
+        grp=`grep -hi "# Group: " $f | sed -n 's/# Group: //p'`
+        d=`grep -hi "# Usage: " $f | sed -n 's/# Usage: //p'`
+        e=`grep -hi "# Version: " $f | sed -n 's/# Version: //p'`
+
+        z="       $c    v$e    $a"
+        z+=$'\n'
+        z+="             Usage: $d"
+        z+=$'\n'
+        z+="             Description: $b"
+        z+=$'\n'
+        z+=$'\n'
+        final[$grp]+=$z
+    done
+
+    for g in "${!final[@]}"
+    do
+        echo "   $g Commands"
+        echo "   ------------------"
+        echo
+        echo "${final[$g]}"
+    done
+
+    echo ""
+    exit
+}
+
+function needRoot {
+
+    # Make sure only root can run our script
+    if [[ $EUID -ne 0 ]]; then
+       echo "This script must be run as root" 1>&2
+       exit 1
+    fi
+
+}
+#
+#
+#   Program Start
+#
+#
+
+# Find panels
+detectPanel
+
+# Show Header
+tplHeader
+
+# Require ROOT
+needRoot
+
+# Get Options
+getOptions "$@"

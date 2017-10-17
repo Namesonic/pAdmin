@@ -1,0 +1,6 @@
+# Name: Connections By Port
+# Command: netstat-ports
+# Desc: Show connections to ports by IP
+# Group: System
+# Version: 1.0
+echo 'Most connections to ports by IP (netstat -nt)'; netstat -nt | awk -F':' '{print $2}' | grep -v "^\$" | sort | uniq -c | grep -v 127.0.0.1 | sort -rn; echo ''

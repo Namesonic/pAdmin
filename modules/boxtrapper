@@ -1,0 +1,8 @@
+# Name: View Boxtrapper Usage
+# Command: boxtrapper
+# Desc: Show boxtrapper usage by email account
+# Group: Email
+# Usage:
+# Version: 1.0
+
+grep "T=virtual_boxtrapper_userdelivery" /var/log/exim_mainlog | awk '{print $6}' | sort | uniq -c | sort -n

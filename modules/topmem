@@ -1,0 +1,7 @@
+# Name: Show Top Memory Processes
+# Command: topmem
+# Desc: This program displays the top most process using memory
+# Group: System
+# Usage: topmem [# of processes to show]
+# Version: 1.2
+ps -eo pmem,pcpu,vsize,pid,cmd | sort -k 1 -nr | head -$1;

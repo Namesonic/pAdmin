@@ -1,0 +1,7 @@
+# Name: I/O Throughput Test
+# Command: iotest
+# Desc: Test the throughput of the harddrive by copying a large file
+# Group: System
+# Usage: iotest
+# Version: 1.0
+dd if=/dev/zero of=/root/testfile_serverstatus bs=200M count=1 oflag=direct

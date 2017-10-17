@@ -1,0 +1,7 @@
+# Name: Show # Connections By Type
+# Command: netstat-conns
+# Desc: Graph total connections by connection type
+# Group: System
+# Usage: netstat-conns
+# Version: 1.0
+echo 'Total connections by type (netstat -an)'; netstat -an | awk '/tcp/ {print $6}' | sort | uniq -c; echo ''

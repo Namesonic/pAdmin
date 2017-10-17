@@ -1,0 +1,20 @@
+# Name: Show Web Logs
+# Command: weblog
+# Desc: Display apache website logs for specified domain
+# Group: Apache
+# Usage: weblog [domain name]
+# Version: 1.0
+
+# Plesk Usage
+if [ "$panel" = "Plesk" ]; then
+    if version_gt $panelVer "10.0"; then 
+        tail -f /var/www/vhosts/$1/statistics/logs/error_log;
+    fi
+fi
+
+# cPanel Usage
+if [ "$panel" = "cPanel" ]; then
+    if version_gt $panelVer "11.0"; then
+        tail -f /var/www/vhosts/$1/statistics/logs/access_log;
+    fi
+fi

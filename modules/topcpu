@@ -1,0 +1,7 @@
+# Name: Show Top CPU Processes
+# Command: topcpu
+# Desc: This program displays the top most process using cpu
+# Group: System
+# Usage: topcpu [# of processes to show]
+# Version: 1.2
+ps -eo pmem,pcpu,vsize,pid,cmd | sort -k 2 -nr | head -$1;

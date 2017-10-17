@@ -1,0 +1,9 @@
+# Name: Find Email ID
+# Command: email_id
+# Desc: Search email logs by email ID
+# Group: Email
+# Usage: [domain name]
+# Version: 1.0
+
+
+grep $1 /usr/local/psa/var/log/maillog

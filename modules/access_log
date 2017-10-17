@@ -1,0 +1,20 @@
+# Name: Tail Access Logs For Domain Name
+# Command: access_log
+# Desc: This program displays access logs for the specified domain
+# Group: Apache
+# Usage: access_log [domain name]
+# Version: 1.0
+
+# Plesk Usage
+if [ "$panel" = "Plesk" ]; then
+    if version_gt $panelVer "10.0"; then
+        tail -f /var/www/vhosts/$1/statistics/logs/access_log;
+    fi
+fi
+
+# cPanel Usage
+if [ "$panel" = "cPanel" ]; then
+    if version_gt $panelVer "11.0"; then
+        tail -f /var/www/vhosts/$1/statistics/logs/access_log;
+    fi
+fi

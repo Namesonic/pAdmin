@@ -1,0 +1,6 @@
+# Name: Last Modified
+# Command: last_mod
+# Desc: Find last modified file recursively from current directory
+# Group: System
+# Version: 1.0
+find . -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ";

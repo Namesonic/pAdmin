@@ -1,0 +1,8 @@
+# Name: All Netstat Data
+# Command: netstat-all
+# Desc: Run all netstat modules
+# Group: System
+# Version: 1.0
+ns netstat-ips
+ns netstat-ports
+ns netstat-conns
