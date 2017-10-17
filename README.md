@@ -6,7 +6,7 @@ Also knows some Plesk and cPanel specific metrics as well.
 
 ## Installation
 
-`git https://github.com/namesonic/pAdmin; sh ./ns --install`
+`git clone https://github.com/Namesonic/pAdmin; sh ./ns --install`
 
 Installs **lah** to the ~/bin/lah folder and appends your session path in ~/.bashrc
 
@@ -17,7 +17,6 @@ Installs **lah** to the ~/bin/lah folder and appends your session path in ~/.bas
 `lah` show help and list installed modules
 
 `lah [command]` runs the specified command modules installed
-
 
 ## Commands
 
