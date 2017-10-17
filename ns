@@ -68,6 +68,11 @@ function getOptions {
             h)
                 tplHelp
                 ;;
+
+            i)
+                install
+                ;;
+
             \?)
                 echo "Invalid option: -$OPTARG" >&2;
                 tplShortHelp
@@ -124,6 +129,13 @@ function tplHeader {
     echo "   - ${panel} v${panelVer} Commands Enabled"
     echo "========================================"
     echo
+}
+
+function install {
+    echo
+    echo "========================================"
+    echo "LAH Installer"
+    echo "========================================"
 }
 
 function tplShortHelp {
