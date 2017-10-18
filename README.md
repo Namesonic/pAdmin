@@ -1,4 +1,4 @@
-# Linux Administration Helper
+# System Administration Helper
 
 Collection of bash command line utilities to help with monitoring or diagnosing problems with a linux server.
 
