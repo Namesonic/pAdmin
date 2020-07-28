@@ -5,4 +5,5 @@
 # Usage: banip [ip address]
 # Version: 1.0
 # Root: true
+
 fail2ban-client set recidive banip $1;

@@ -20,21 +20,61 @@ VERSION="0.1.2"
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 panel=""
 panelVer=""
+VERIFY_ENV=
 
+# Setup the known environment variables
 declare -a environment=("LOG_MAIL" "LOG_MESSAGES" "LOG_SECURE" "LOG_SYSTEM")
 
-function showEnvironment {
+function showEnvironment() {
     echo " Environment Variables:"
+    echo
 
     for env in "${environment[@]}"
     do
         if [[ -z ${!env} ]]; then
-            echo "      ${env} [NOT SET]"
+            if [ ${VERIFY_ENV} ]; then
+                read -p "      [  ] ${env}=" path
+                addEnvironment "${path}" "${env}"
+            else
+                echo "      [  ] ${env}=[missing]"
+            fi
         else
-            echo "      ${env} [${!env}]"
+            if test -f "${!env}"; then
+                echo "      [OK] ${env}=${!env}"
+            else
+                echo "      [--] ${env}=${!env} (file not found)"
+            fi
         fi
     done
+
+    if ${VERIFY_ENV}; then
+        reloadEnvironment
+    fi
+}
+
+function addEnvironment () {
+    path=$1
+    env=$2
+    export="export ${env}="
+
     echo
+    if test -f ${path}; then
+        if grep -q "${export}" ~/.bashrc; then
+            tplError "Environment variable ${env} already exists - update it manually in ~/.bashrc"
+        else
+            echo "${export}${path}" >> ~/.bashrc
+            echo "Found ${path} - Added ${env} environment variable to ~/.bashrc"
+        fi
+    else
+        echo "The log file ${path} you specified doesn't exist"
+    fi
+    echo
+}
+
+function reloadEnvironment () {
+    echo "Reloading bash environment variables..."
+    echo
+    . ~/.bashrc
 }
 
 function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1 )" != "$1"; }
@@ -60,9 +100,8 @@ function detectPanel {
 
 # Setup program options
 function getOptions {
-
     local OPTIND o a
-    while getopts ":hramsfilv" o; do
+    while getopts ":hramsfivl" o; do
 
         case "${o}" in
             r)
@@ -83,13 +122,18 @@ function getOptions {
                 ;;
             h)
                 tplHelp
-                ;;
-
-            l)
-                tplCommands
+                tplShortHelp
+                showEnvironment
+                return 1
                 ;;
 
             v)
+                VERIFY_ENV=1
+                showEnvironment
+                return 1
+                ;;
+
+            l)
                 tplCommandsVerbose
                 ;;
 
@@ -110,8 +154,8 @@ function getOptions {
     shift $((OPTIND-1))
 
     if [ -z $1 ]; then
-        tplShortHelp;
-        showEnvironment;
+        tplCommands
+        tplShortHelp
         return 1;
     fi
 
@@ -203,7 +247,7 @@ function tplHeader {
     if [[ $panel ]]; then
         panelGreeting="${panel} v${panelVer} Commands Enabled"
     else
-        panelGreeting="Unknown control panel"
+        panelGreeting="No control panel detected"
     fi
     echo "$greeting - $panelGreeting"
     echo
@@ -223,7 +267,7 @@ function tplShortHelp {
     echo " Options:"
     echo "      -h          show help"
     echo "      -l          list all commands"
-    echo "      -v          verbose list all commands"
+    echo "      -v          verify environment"
     echo
 }
 
@@ -250,13 +294,10 @@ function tplCommands {
         echo "           ${final[$g]}"
         echo
     done
-    echo
-    exit
 }
 
 function tplCommandsVerbose {
     echo " Installed Commands:"
-    echo ""
     echo "$1"
 
     # Loop through modules folder
@@ -314,9 +355,6 @@ detectPanel
 
 # Show Header
 tplHeader
-
-# Require ROOT
-#needRoot
 
 # Get Options
 getOptions "$@"

@@ -1,8 +1,8 @@
 # Name: Find Email ID
-# Command: email_id
+# Command: email-id
 # Desc: Search email logs by email ID
 # Group: Email
-# Usage: email_id [EMAIL ID]
+# Usage: email-id [EMAIL ID]
 # Version: 1.0
 # Root: true
 # Environment: LOG_MAIL
@@ -12,4 +12,4 @@ if [ -z $1 ]; then
     exit
 fi
 
-grep $1 ${LOG_MAIL}
+grep "$1" ${LOG_MAIL}
