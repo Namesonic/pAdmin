@@ -21,6 +21,22 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 panel=""
 panelVer=""
 
+declare -a environment=("LOG_MAIL" "LOG_MESSAGES" "LOG_SECURE" "LOG_SYSTEM")
+
+function showEnvironment {
+    echo " Environment Variables:"
+
+    for env in "${environment[@]}"
+    do
+        if [[ -z ${!env} ]]; then
+            echo "      ${env} [NOT SET]"
+        else
+            echo "      ${env} [${!env}]"
+        fi
+    done
+    echo
+}
+
 function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1 )" != "$1"; }
 
 function detectPanel {
@@ -95,6 +111,7 @@ function getOptions {
 
     if [ -z $1 ]; then
         tplShortHelp;
+        showEnvironment;
         return 1;
     fi
 
@@ -108,7 +125,6 @@ function getOptions {
         tplCommand "$BASEDIR/modules/$1"
 
         # Before command is run
-        echo
         export panel
         export panelVer
         export me
@@ -137,11 +153,32 @@ function tplCommand {
     cmdGroup=`grep -hi "# Group: " $f`
     cmdUsage=`grep -hi "# Usage: " $f`
     cmdVersion=`grep -hi "# Version: " $f`
-    cmdRoot=`grep -hi "# Root: " $f`
+    cmdRoot=`grep -hi "# Root: " $f | sed -n 's/# Root: //p'`
+    cmdEnvironment=`grep -hi "# Environment: " $f | sed -n 's/# Environment: //p'`
 
+    # Display the command details
     echo ${cmdName}
     echo ${cmdDesc}
     echo ${cmdUsage}
+    echo
+
+    # Check root requirement
+    if [ "$cmdRoot" = "true" ]; then
+        needRoot
+    fi
+
+    # Check required environments
+    cmdEnvironmentArray=(${cmdEnvironment})
+    for env in ${!cmdEnvironmentArray[@]}
+    do
+        if [ ! -z ${cmdEnvironmentArray[${env}]} ]; then
+            if [ -z ${!cmdEnvironmentArray[${env}]} ]; then
+                tplError "Missing required environment variable ${cmdEnvironmentArray[${env}]}"
+                echo
+                exit
+            fi
+        fi
+    done
 }
 
 
@@ -162,6 +199,7 @@ function tplSuccess {
 
 function tplHeader {
     greeting="Server Helper v$VERSION"
+    echo
     if [[ $panel ]]; then
         panelGreeting="${panel} v${panelVer} Commands Enabled"
     else
@@ -260,6 +298,7 @@ function needRoot {
     # Make sure only root can run our script
     if [[ $EUID -ne 0 ]]; then
        echo "This script must be run as root" 1>&2
+       echo
        exit 1
     fi
 

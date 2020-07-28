@@ -2,6 +2,7 @@
 # Command: banip
 # Desc: Ban IP address in fail2ban recidive jail
 # Group: Firewall
-# Usage: [ip address]
+# Usage: banip [ip address]
 # Version: 1.0
+# Root: true
 fail2ban-client set recidive banip $1;

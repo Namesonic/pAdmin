@@ -2,8 +2,14 @@
 # Command: email_id
 # Desc: Search email logs by email ID
 # Group: Email
-# Usage: [domain name]
+# Usage: email_id [EMAIL ID]
 # Version: 1.0
+# Root: true
+# Environment: LOG_MAIL
 
+if [ -z $1 ]; then
+    echo "Email ID is required"
+    exit
+fi
 
-grep $1 /usr/local/psa/var/log/maillog
+grep $1 ${LOG_MAIL}
