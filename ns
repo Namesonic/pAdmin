@@ -23,7 +23,7 @@ panelVer=""
 VERIFY_ENV=
 
 # Setup the known environment variables
-declare -a environment=("LOG_MAIL" "LOG_MESSAGES" "LOG_SECURE" "LOG_SYSTEM")
+declare -a environment=("LOG_MAIL" "LOG_MESSAGES" "LOG_SECURE")
 
 function showEnvironment() {
     echo " Environment Variables:"
@@ -34,6 +34,7 @@ function showEnvironment() {
         if [[ -z ${!env} ]]; then
             if [ ${VERIFY_ENV} ]; then
                 read -p "      [  ] ${env}=" path
+                echo
                 addEnvironment "${path}" "${env}"
             else
                 echo "      [  ] ${env}=[missing]"
@@ -46,8 +47,9 @@ function showEnvironment() {
             fi
         fi
     done
+    echo
 
-    if ${VERIFY_ENV}; then
+    if [ ${VERIFY_ENV} ]; then
         reloadEnvironment
     fi
 }
@@ -57,7 +59,6 @@ function addEnvironment () {
     env=$2
     export="export ${env}="
 
-    echo
     if test -f ${path}; then
         if grep -q "${export}" ~/.bashrc; then
             tplError "Environment variable ${env} already exists - update it manually in ~/.bashrc"
@@ -74,7 +75,7 @@ function addEnvironment () {
 function reloadEnvironment () {
     echo "Reloading bash environment variables..."
     echo
-    . ~/.bashrc
+    source ~/.bashrc
 }
 
 function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1 )" != "$1"; }

@@ -1,0 +1,15 @@
+# Name: Delete Specific Email ID
+# Command: email-delete-id
+# Desc: Delete email from mailqueue by email ID
+# Group: Email
+# Usage: email-delete-id [EMAIL ID]
+# Version: 1.0
+# Root: true
+# Environment: LOG_MAIL
+
+if [ -z $1 ]; then
+    echo "Email ID is required"
+    exit
+fi
+
+postsuper -d "$1";

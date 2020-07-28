@@ -4,6 +4,7 @@
 # Group: Apache
 # Usage: access_log [domain name]
 # Version: 1.0
+# Root: true
 
 # Plesk Usage
 if [ "$panel" = "Plesk" ]; then

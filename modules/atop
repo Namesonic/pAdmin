@@ -1,7 +1,0 @@
-# Name: Apache Top
-# Command: atop
-# Desc: Show most recent websites being used
-# Group: Apache
-# Usage: atop [# of processes to show]
-# Version: 1.2
-tail -f /var/www/vhosts/*/statistics/logs/access_log | perl -ne '$|=1; if(/==> \/var\/www\/vhosts\/(.*?)\//) { if($i++>30) { print "\n-------------------------------------------------------------------------\n"; system("uptime; free;"); print "-------------------------------------------------------------------------\n"; $i = 0; } else { print "\n";} print "Domain: $1 "; } else { print "."; }'

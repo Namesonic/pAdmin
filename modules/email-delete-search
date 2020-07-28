@@ -1,0 +1,15 @@
+ # Name: Delete Email via Search
+# Command: email-delete-search
+# Desc: Delete queued email by searching for sender/recipient address
+# Group: Email
+# Usage: email-delete-search [partial email address]
+# Version: 1.0
+# Root: true
+# Environment: LOG_MAIL
+
+if [ -z $1 ]; then
+    echo "Search text is required"
+    exit
+fi
+
+postqueue -p | tail -n +2 | awk 'BEGIN { RS = "" } /'$1'/ { print $1 }' | tr -d '*!' | postsuper -d - ;
