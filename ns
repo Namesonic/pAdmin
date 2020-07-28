@@ -25,7 +25,7 @@ function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1 )" != "
 
 function detectPanel {
 
-    panel="Unknown"
+    #panel="Unknown"
 
     if [ -a /usr/local/psa/version ]; then
 
@@ -46,7 +46,7 @@ function detectPanel {
 function getOptions {
 
     local OPTIND o a
-    while getopts ":hramsf" o; do
+    while getopts ":hramsfilv" o; do
 
         case "${o}" in
             r)
@@ -69,6 +69,14 @@ function getOptions {
                 tplHelp
                 ;;
 
+            l)
+                tplCommands
+                ;;
+
+            v)
+                tplCommandsVerbose
+                ;;
+
             i)
                 install
                 ;;
@@ -81,6 +89,7 @@ function getOptions {
 
         esac
     done
+
     # Shift off the parsed options
     shift $((OPTIND-1))
 
@@ -93,14 +102,23 @@ function getOptions {
     if [ -a "$BASEDIR/modules/$1" ]; then
 
         # Set the execution bit
-        eval "chmod u+x $BASEDIR/modules/$*"
+        eval "chmod u+x $BASEDIR/modules/$1"
 
-        tplSuccess "Running module $1";
+        # Display command details
+        tplCommand "$BASEDIR/modules/$1"
+
+        # Before command is run
         echo
         export panel
         export panelVer
+        export me
         export -f version_gt
+
+        # Run command
         eval "$BASEDIR/modules/$*"
+
+        # Cleanup after command
+        echo
     else
         tplError "Command not found ($1)";
         echo
@@ -110,6 +128,22 @@ function getOptions {
     #echo "a: [${a}], non-option arguments: $*" 1>&2
 
 }
+
+function tplCommand {
+    f=$1
+    cmdName=`grep -hi "# Name: " $f`
+    cmdDesc=`grep -hi "# Desc: " $f`
+    cmdCommand=`grep -hi "# Command: " $f`
+    cmdGroup=`grep -hi "# Group: " $f`
+    cmdUsage=`grep -hi "# Usage: " $f`
+    cmdVersion=`grep -hi "# Version: " $f`
+    cmdRoot=`grep -hi "# Root: " $f`
+
+    echo ${cmdName}
+    echo ${cmdDesc}
+    echo ${cmdUsage}
+}
+
 
 #
 #   Template functions
@@ -127,30 +161,40 @@ function tplSuccess {
 }
 
 function tplHeader {
-    echo
-    echo "========================================="
-    echo "Namesonic Administraion Helper v$VERSION"
-    echo "   - ${panel} v${panelVer} Commands Enabled"
-    echo "========================================"
+    greeting="Server Helper v$VERSION"
+    if [[ $panel ]]; then
+        panelGreeting="${panel} v${panelVer} Commands Enabled"
+    else
+        panelGreeting="Unknown control panel"
+    fi
+    echo "$greeting - $panelGreeting"
     echo
 }
 
 function install {
+    echo "========================================"
+    echo "Installer"
+    echo "========================================"
     echo
-    echo "========================================"
-    echo "LAH Installer"
-    echo "========================================"
 }
 
 function tplShortHelp {
-    echo
     echo " Usage:"
-    echo "      ns [-rev] [command] [command arguments]"
+    echo "      ns [options] [command] [command arguments]"
     echo
-    echo " Help:"
-    echo "      ns -h"
+    echo " Options:"
+    echo "      -h          show help"
+    echo "      -l          list all commands"
+    echo "      -v          verbose list all commands"
+    echo
+}
 
+function tplHelp {
+    echo " This is a versatile, command line utility management script that gives convention and grouping of commonly used shell scripts."
     echo
+}
+
+function tplCommands {
     echo " Commands:"
     echo
     declare -A final
@@ -168,23 +212,14 @@ function tplShortHelp {
         echo "           ${final[$g]}"
         echo
     done
-
+    echo
+    exit
 }
 
-function tplHelp {
-    echo
-    echo " Usage:"
-    echo "       ${me} [options] [monitoring options]"
-    echo "       ${me} -[rv] -[sam]"
-    echo ""
-    echo " Options:"
-    echo ""
-    echo "       -r       Show Full Report"
-    echo "       -e       Email Root Full Report ( used with -r )"
-    echo "       -v       Verbose Output"
-    echo ""
+function tplCommandsVerbose {
     echo " Installed Commands:"
     echo ""
+    echo "$1"
 
     # Loop through modules folder
     #   - take Name: Desc: fields for display
@@ -197,6 +232,7 @@ function tplHelp {
         grp=`grep -hi "# Group: " $f | sed -n 's/# Group: //p'`
         d=`grep -hi "# Usage: " $f | sed -n 's/# Usage: //p'`
         e=`grep -hi "# Version: " $f | sed -n 's/# Version: //p'`
+        root=`grep -hi "# Root: " $f | sed -n 's/# Root: //p'`
 
         z="       $c    v$e    $a"
         z+=$'\n'
@@ -215,8 +251,7 @@ function tplHelp {
         echo
         echo "${final[$g]}"
     done
-
-    echo ""
+    echo
     exit
 }
 
@@ -242,7 +277,7 @@ detectPanel
 tplHeader
 
 # Require ROOT
-needRoot
+#needRoot
 
 # Get Options
 getOptions "$@"
